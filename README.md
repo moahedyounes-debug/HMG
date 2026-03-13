@@ -1,2 +1,0 @@
-# HMG
-Alhabibi Medical Group
