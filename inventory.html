@@ -1,67 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-  <title>Product Lookup</title>
-  <style>
-    body { font-family: Arial; margin: 20px; }
-    input { padding: 10px; width: 300px; }
-    button { padding: 10px 20px; margin-left: 10px; }
-    table { margin-top: 20px; width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ccc; padding: 10px; }
-  </style>
+<meta charset="UTF-8">
+<title>نظام البحث في المخزون</title>
+
+<style>
+    body { font-family: Arial; margin: 20px; background:#f7f7f7; }
+    h2 { color:#333; }
+    input { padding: 10px; width: 300px; font-size:16px; }
+    button { padding: 10px 20px; font-size:16px; cursor:pointer; }
+    table { margin-top: 20px; width: 100%; border-collapse: collapse; background:white; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align:center; }
+    th { background:#eee; }
+    .report-btn { background:#d9534f; color:white; border:none; padding:8px 15px; }
+</style>
 </head>
+
 <body>
 
-<h2>البحث عن المنتج</h2>
+<h2>🔍 البحث عن المنتج</h2>
+
 <input id="search" placeholder="ابحث برقم الصنف أو UPC">
 <button onclick="searchProduct()">بحث</button>
 
 <table id="resultTable" style="display:none;">
-  <tr><th>رقم الصنف</th><th>UPC</th><th>الاسم</th><th>الوصف</th><th>تقرير</th></tr>
-  <tbody id="resultBody"></tbody>
+    <thead>
+        <tr>
+            <th>رقم الصنف</th>
+            <th>UPC</th>
+            <th>اسم المنتج</th>
+            <th>الوصف</th>
+            <th>رفع تقرير</th>
+        </tr>
+    </thead>
+    <tbody id="resultBody"></tbody>
 </table>
 
 <script>
-let products = []; // سيتم تحميله من ملف JSON
+// تحميل البيانات من ملف JSON داخل GitHub
+let products = [];
 
 fetch("products.json")
-  .then(res => res.json())
-  .then(data => products = data);
+    .then(res => res.json())
+    .then(data => products = data)
+    .catch(err => alert("تعذر تحميل ملف المنتجات"));
 
 function searchProduct() {
-  let q = document.getElementById("search").value.trim();
-  let result = products.filter(p =>
-    p.item_code.includes(q) || p.upc.includes(q) || p.name.includes(q)
-  );
+    let q = document.getElementById("search").value.trim();
+    if (q === "") {
+        alert("الرجاء إدخال رقم الصنف أو UPC");
+        return;
+    }
 
-  let table = document.getElementById("resultTable");
-  let body = document.getElementById("resultBody");
-  body.innerHTML = "";
+    let result = products.filter(p =>
+        p.item_code.includes(q) ||
+        p.upc.includes(q) ||
+        p.name.includes(q)
+    );
 
-  if (result.length > 0) {
-    table.style.display = "table";
-    result.forEach(p => {
-      body.innerHTML += `
-        <tr>
-          <td>${p.item_code}</td>
-          <td>${p.upc}</td>
-          <td>${p.name}</td>
-          <td>${p.description}</td>
-          <td><button onclick="report('${p.item_code}')">رفع تقرير</button></td>
-        </tr>
-      `;
-    });
-  } else {
-    table.style.display = "none";
-    alert("لا يوجد نتائج");
-  }
+    let table = document.getElementById("resultTable");
+    let body = document.getElementById("resultBody");
+    body.innerHTML = "";
+
+    if (result.length > 0) {
+        table.style.display = "table";
+        result.forEach(p => {
+            body.innerHTML += `
+                <tr>
+                    <td>${p.item_code}</td>
+                    <td>${p.upc}</td>
+                    <td>${p.name}</td>
+                    <td>${p.description}</td>
+                    <td>
+                        <button class="report-btn" onclick="report('${p.item_code}')">
+                            رفع تقرير
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    } else {
+        table.style.display = "none";
+        alert("لا يوجد نتائج مطابقة");
+    }
 }
 
 function report(code) {
-  let type = prompt("اختر نوع التقرير:\n1- عدم تطابق المنتج\n2- المنتج غير معرف");
-  if (type === "1" || type === "2") {
-    alert("تم إرسال التقرير لمشرف المستودع");
-  }
+    let type = prompt(
+        "اختر نوع التقرير:\n\n1- عدم تطابق المنتج\n2- المنتج غير معرف"
+    );
+
+    if (type === "1") {
+        alert("✔ تم تسجيل تقرير: عدم تطابق المنتج");
+    } 
+    else if (type === "2") {
+        alert("✔ تم تسجيل تقرير: المنتج غير معرف");
+    } 
+    else {
+        alert("❌ لم يتم اختيار نوع التقرير");
+    }
 }
 </script>
 
