@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Product Lookup</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    input { padding: 10px; width: 300px; }
+    button { padding: 10px 20px; margin-left: 10px; }
+    table { margin-top: 20px; width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 10px; }
+  </style>
+</head>
+<body>
+
+<h2>البحث عن المنتج</h2>
+<input id="search" placeholder="ابحث برقم الصنف أو UPC">
+<button onclick="searchProduct()">بحث</button>
+
+<table id="resultTable" style="display:none;">
+  <tr><th>رقم الصنف</th><th>UPC</th><th>الاسم</th><th>الوصف</th><th>تقرير</th></tr>
+  <tbody id="resultBody"></tbody>
+</table>
+
+<script>
+let products = []; // سيتم تحميله من ملف JSON
+
+fetch("products.json")
+  .then(res => res.json())
+  .then(data => products = data);
+
+function searchProduct() {
+  let q = document.getElementById("search").value.trim();
+  let result = products.filter(p =>
+    p.item_code.includes(q) || p.upc.includes(q) || p.name.includes(q)
+  );
+
+  let table = document.getElementById("resultTable");
+  let body = document.getElementById("resultBody");
+  body.innerHTML = "";
+
+  if (result.length > 0) {
+    table.style.display = "table";
+    result.forEach(p => {
+      body.innerHTML += `
+        <tr>
+          <td>${p.item_code}</td>
+          <td>${p.upc}</td>
+          <td>${p.name}</td>
+          <td>${p.description}</td>
+          <td><button onclick="report('${p.item_code}')">رفع تقرير</button></td>
+        </tr>
+      `;
+    });
+  } else {
+    table.style.display = "none";
+    alert("لا يوجد نتائج");
+  }
+}
+
+function report(code) {
+  let type = prompt("اختر نوع التقرير:\n1- عدم تطابق المنتج\n2- المنتج غير معرف");
+  if (type === "1" || type === "2") {
+    alert("تم إرسال التقرير لمشرف المستودع");
+  }
+}
+</script>
+
+</body>
+</html>
