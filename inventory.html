@@ -54,7 +54,7 @@ function searchProduct() {
 
     let result = products.filter(p =>
         p.item_code.includes(q) ||
-        p.upc.includes(q) ||
+        (p.upc && p.upc.includes(q)) ||
         p.name.includes(q)
     );
 
@@ -68,7 +68,7 @@ function searchProduct() {
             body.innerHTML += `
                 <tr>
                     <td>${p.item_code}</td>
-                    <td>${p.upc}</td>
+                    <td>${p.upc ?? "—"}</td>
                     <td>${p.name}</td>
                     <td>${p.description}</td>
                     <td>
