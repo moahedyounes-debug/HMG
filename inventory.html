@@ -2,45 +2,46 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>نظام البحث في المخزون – مستشفيات الحبيب</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>نظام البحث – Search System</title>
 
 <style>
     body {
         font-family: Arial;
         margin: 0;
         padding: 0;
-        background: url('Alhabib.png') no-repeat center center fixed;
-        background-size: 40%;
-        opacity: 0.98;
+        background: #f5f5f5;
     }
 
     .header {
         background: white;
-        padding: 15px;
+        padding: 10px;
         text-align: center;
-        border-bottom: 2px solid #ddd;
+        border-bottom: 1px solid #ddd;
     }
 
     .header img {
-        height: 80px;
+        height: 60px;
     }
 
     .container {
-        padding: 20px;
+        padding: 15px;
     }
 
     h2 {
         color: #333;
         text-align: center;
-        margin-bottom: 25px;
+        font-size: 22px;
+        margin-bottom: 20px;
     }
 
     #search {
         width: 100%;
         padding: 15px;
-        font-size: 20px;
+        font-size: 18px;
         border: 2px solid #aaa;
-        border-radius: 8px;
+        border-radius: 10px;
         margin-bottom: 20px;
     }
 
@@ -48,73 +49,80 @@
         width: 100%;
         border-collapse: collapse;
         background: white;
+        border-radius: 10px;
+        overflow: hidden;
     }
 
     th, td {
-        border: 1px solid #ccc;
+        border-bottom: 1px solid #eee;
         padding: 12px;
         text-align: center;
-        font-size: 18px;
+        font-size: 16px;
     }
 
     th {
-        background: #eee;
+        background: #fafafa;
+        font-weight: bold;
     }
 
     .report-btn {
         background: #d9534f;
         color: white;
         border: none;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 6px;
+        padding: 10px 15px;
+        font-size: 15px;
+        border-radius: 8px;
         cursor: pointer;
+        width: 100%;
     }
 
+    /* Popup */
     .popup {
         display: none;
         position: fixed;
         top: 0; left: 0;
         width: 100%; height: 100%;
-        background: rgba(0,0,0,0.6);
+        background: rgba(0,0,0,0.5);
         justify-content: center;
         align-items: center;
+        padding: 20px;
     }
 
     .popup-content {
         background: white;
-        padding: 25px;
-        width: 350px;
+        padding: 20px;
+        width: 100%;
+        max-width: 350px;
         text-align: center;
-        border-radius: 10px;
-        box-shadow: 0 0 10px #333;
+        border-radius: 12px;
     }
 
     .popup button {
         width: 100%;
-        padding: 12px;
+        padding: 14px;
         margin-top: 10px;
-        font-size: 18px;
+        font-size: 17px;
         cursor: pointer;
-        border-radius: 6px;
+        border-radius: 8px;
         border: none;
     }
 
     .btn1 { background: #d9534f; color: white; }
     .btn2 { background: #0275d8; color: white; }
 
+    /* Success message */
     .success {
         display: none;
         position: fixed;
-        top: 40%;
+        bottom: 20px;
         left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        padding: 25px;
+        transform: translateX(-50%);
+        background: #28a745;
+        color: white;
+        padding: 15px 20px;
         border-radius: 10px;
+        font-size: 18px;
         text-align: center;
-        box-shadow: 0 0 10px #333;
-        font-size: 20px;
     }
 </style>
 </head>
@@ -127,16 +135,16 @@
 
 <div class="container">
 
-<h2>🔍 البحث عن المنتج</h2>
+<h2>🔍 البحث عن المنتج – Product Search</h2>
 
-<input id="search" placeholder="جاري تحميل البيانات..." disabled oninput="searchProduct()">
+<input id="search" placeholder="جاري تحميل البيانات... / Loading data..." disabled oninput="searchProduct()">
 
 <table id="resultTable" style="display:none;">
     <thead>
         <tr>
-            <th>رقم الصنف</th>
-            <th>اسم المنتج</th>
-            <th>رفع تقرير</th>
+            <th>رقم الصنف<br>Item Code</th>
+            <th>اسم المنتج<br>Product Name</th>
+            <th>تقرير<br>Report</th>
         </tr>
     </thead>
     <tbody id="resultBody"></tbody>
@@ -144,11 +152,12 @@
 
 </div>
 
+<!-- Popup -->
 <div class="popup" id="popup">
     <div class="popup-content">
-        <h3>اختر نوع التقرير</h3>
-        <button class="btn1" onclick="sendReport('عدم تطابق المنتج')">عدم تطابق المنتج</button>
-        <button class="btn2" onclick="sendReport('المنتج غير معرف')">المنتج غير معرف</button>
+        <h3>اختر نوع التقرير<br>Select Report Type</h3>
+        <button class="btn1" onclick="sendReport('عدم تطابق المنتج / Product mismatch')">عدم تطابق المنتج<br>Product mismatch</button>
+        <button class="btn2" onclick="sendReport('المنتج غير معرف / Product not found')">المنتج غير معرف<br>Product not found</button>
     </div>
 </div>
 
@@ -159,24 +168,45 @@ let products = [];
 let selectedItem = "";
 let dataLoaded = false;
 
-// رابط ملف JSON في GitHub
+// رابط JSON
 const jsonURL = "https://raw.githubusercontent.com/moahedyounes-debug/HMG/main/products.json";
 
-// تحميل البيانات فورًا
+// تحميل البيانات مباشرة
 fetch(jsonURL, { cache: "no-store" })
     .then(res => res.json())
     .then(data => {
         products = data;
         dataLoaded = true;
 
-        // تفعيل البحث مباشرة
         const searchInput = document.getElementById("search");
         searchInput.disabled = false;
-        searchInput.placeholder = "ابحث برقم الصنف أو اسم المنتج";
-    })
-    .catch(() => {
-        alert("تعذر تحميل البيانات من ملف JSON");
+        searchInput.placeholder = "ابحث برقم الصنف أو اسم المنتج / Search by item code or name";
+
+        // عرض كل المنتجات مباشرة
+        displayProducts(products);
     });
+
+// دالة عرض المنتجات
+function displayProducts(list) {
+    let table = document.getElementById("resultTable");
+    let body = document.getElementById("resultBody");
+    body.innerHTML = "";
+
+    if (list.length > 0) {
+        table.style.display = "table";
+        list.forEach(p => {
+            body.innerHTML += `
+                <tr>
+                    <td>${p.item_code}</td>
+                    <td>${p.name}</td>
+                    <td><button class="report-btn" onclick="openPopup('${p.item_code}', '${p.name}')">رفع / Report</button></td>
+                </tr>
+            `;
+        });
+    } else {
+        table.style.display = "none";
+    }
+}
 
 // البحث
 function searchProduct() {
@@ -188,37 +218,20 @@ function searchProduct() {
         p.name.includes(q)
     );
 
-    let table = document.getElementById("resultTable");
-    let body = document.getElementById("resultBody");
-    body.innerHTML = "";
-
-    if (result.length > 0) {
-        table.style.display = "table";
-        result.forEach(p => {
-            body.innerHTML += `
-                <tr>
-                    <td>${p.item_code}</td>
-                    <td>${p.name}</td>
-                    <td><button class="report-btn" onclick="openPopup('${p.item_code}', '${p.name}')">رفع تقرير</button></td>
-                </tr>
-            `;
-        });
-    } else {
-        table.style.display = "none";
-    }
+    displayProducts(result);
 }
 
-// فتح نافذة التقرير
+// فتح البوب أب
 function openPopup(code, name) {
     selectedItem = { code, name };
     document.getElementById("popup").style.display = "flex";
 }
 
-// إرسال التقرير (بدون Firebase)
+// إرسال التقرير
 function sendReport(type) {
     document.getElementById("popup").style.display = "none";
 
-    let msg = `تم تسجيل تقرير: "${type}" للمنتج "${selectedItem.name}"`;
+    let msg = `تم تسجيل تقرير: ${type} للمنتج: ${selectedItem.name}`;
 
     let box = document.getElementById("successBox");
     box.innerHTML = msg;
@@ -226,7 +239,7 @@ function sendReport(type) {
 
     setTimeout(() => {
         box.style.display = "none";
-    }, 4000);
+    }, 3000);
 }
 </script>
 
