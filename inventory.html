@@ -76,7 +76,6 @@
         width: 100%;
     }
 
-    /* Popup */
     .popup {
         display: none;
         position: fixed;
@@ -110,7 +109,6 @@
     .btn1 { background: #d9534f; color: white; }
     .btn2 { background: #0275d8; color: white; }
 
-    /* Success message */
     .success {
         display: none;
         position: fixed;
@@ -152,12 +150,15 @@
 
 </div>
 
-<!-- Popup -->
 <div class="popup" id="popup">
     <div class="popup-content">
         <h3>اختر نوع التقرير<br>Select Report Type</h3>
-        <button class="btn1" onclick="sendReport('عدم تطابق المنتج / Product mismatch')">عدم تطابق المنتج<br>Product mismatch</button>
-        <button class="btn2" onclick="sendReport('المنتج غير معرف / Product not found')">المنتج غير معرف<br>Product not found</button>
+        <button class="btn1" onclick="sendReport('عدم تطابق المنتج / Product mismatch')">
+            عدم تطابق المنتج<br>Product mismatch
+        </button>
+        <button class="btn2" onclick="sendReport('المنتج غير معرف / Product not found')">
+            المنتج غير معرف<br>Product not found
+        </button>
     </div>
 </div>
 
@@ -165,13 +166,11 @@
 
 <script>
 let products = [];
-let selectedItem = "";
+let selectedItem = null;
 let dataLoaded = false;
 
-// رابط JSON
 const jsonURL = "https://raw.githubusercontent.com/moahedyounes-debug/HMG/main/products.json";
 
-// تحميل البيانات مباشرة
 fetch(jsonURL, { cache: "no-store" })
     .then(res => res.json())
     .then(data => {
@@ -182,11 +181,9 @@ fetch(jsonURL, { cache: "no-store" })
         searchInput.disabled = false;
         searchInput.placeholder = "ابحث برقم الصنف أو اسم المنتج / Search by item code or name";
 
-        // عرض كل المنتجات مباشرة
         displayProducts(products);
     });
 
-// دالة عرض المنتجات
 function displayProducts(list) {
     let table = document.getElementById("resultTable");
     let body = document.getElementById("resultBody");
@@ -199,7 +196,11 @@ function displayProducts(list) {
                 <tr>
                     <td>${p.item_code}</td>
                     <td>${p.name}</td>
-                    <td><button class="report-btn" onclick="openPopup('${p.item_code}', '${p.name}')">رفع / Report</button></td>
+                    <td>
+                        <button class="report-btn" onclick="openPopup('${p.item_code}')">
+                            رفع / Report
+                        </button>
+                    </td>
                 </tr>
             `;
         });
@@ -208,28 +209,27 @@ function displayProducts(list) {
     }
 }
 
-// البحث
 function searchProduct() {
     if (!dataLoaded) return;
 
     let q = document.getElementById("search").value.trim();
     let result = products.filter(p =>
         p.item_code.includes(q) ||
-        p.name.includes(q)
+        p.name.toLowerCase().includes(q.toLowerCase())
     );
 
     displayProducts(result);
 }
 
-// فتح البوب أب
-function openPopup(code, name) {
-    selectedItem = { code, name };
+function openPopup(code) {
+    selectedItem = products.find(p => p.item_code === code);
     document.getElementById("popup").style.display = "flex";
 }
 
-// إرسال التقرير
 function sendReport(type) {
     document.getElementById("popup").style.display = "none";
+
+    if (!selectedItem) return;
 
     let msg = `تم تسجيل تقرير: ${type} للمنتج: ${selectedItem.name}`;
 
