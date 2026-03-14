@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <title>نظام البحث في المخزون – مستشفيات الحبيب</title>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
 <style>
     body {
         font-family: Arial;
@@ -129,7 +133,7 @@
 
 <h2>🔍 البحث عن المنتج</h2>
 
-<input id="search" placeholder="ابحث برقم الصنف أو اسم المنتج" oninput="searchProduct()">
+<input id="search" placeholder="جاري تحميل البيانات..." disabled oninput="searchProduct()">
 
 <table id="resultTable" style="display:none;">
     <thead>
@@ -155,40 +159,36 @@
 <div class="success" id="successBox"></div>
 
 <script>
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyDQBMN_t-wAFubPPL9iI31g_sZbIWTP1oE",
+  authDomain: "hmgsa-d4a90.firebaseapp.com",
+  projectId: "hmgsa-d4a90",
+  storageBucket: "hmgsa-d4a90.firebasestorage.app",
+  messagingSenderId: "859153120328",
+  appId: "1:859153120328:web:a06ca08f8e6e39bf48ac7d",
+  measurementId: "G-YPGYMJGBKT"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 let products = [];
 let selectedItem = "";
 let dataLoaded = false;
 
-// إظهار رسالة تحميل
-document.getElementById("search").disabled = true;
-document.getElementById("search").placeholder = "جاري تحميل البيانات...";
+// Load products from Firestore
+db.collection("products").get().then(snapshot => {
+    products = snapshot.docs.map(doc => doc.data());
+    dataLoaded = true;
 
-fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRFLVRgFOuY-waesrytMd_KEZ1wwkS6qcT4Ep-n5VERE8qdRCz1V_hFwZ_amkqJPU6rG-i-t2ViHcpq/pub?output=csv")
-    .then(res => res.text())
-    .then(csv => {
-        let lines = csv.split("\n");
+    document.getElementById("search").disabled = false;
+    document.getElementById("search").placeholder = "ابحث برقم الصنف أو اسم المنتج";
+});
 
-        products = lines.slice(1).map(line => {
-            let cols = line.split(",");
-            return {
-                item_code: cols[0]?.trim(),
-                name: cols[1]?.trim()
-            };
-        });
-
-        dataLoaded = true;
-        document.getElementById("search").disabled = false;
-        document.getElementById("search").placeholder = "ابحث برقم الصنف أو اسم المنتج";
-    })
-    .catch(() => {
-        alert("تعذر تحميل البيانات من Google Sheet");
-    });
-
+// Search function
 function searchProduct() {
-    if (!dataLoaded) {
-        alert("الرجاء الانتظار حتى يتم تحميل البيانات");
-        return;
-    }
+    if (!dataLoaded) return;
 
     let q = document.getElementById("search").value.trim();
     let result = products.filter(p =>
@@ -224,6 +224,13 @@ function openPopup(code, name) {
 function sendReport(type) {
     document.getElementById("popup").style.display = "none";
 
+    db.collection("reports").add({
+        item_code: selectedItem.code,
+        name: selectedItem.name,
+        type: type,
+        timestamp: new Date().toISOString()
+    });
+
     let msg = `تم إرسال إشعار بالخطأ: "${type}" للمنتج "${selectedItem.name}"`;
 
     let box = document.getElementById("successBox");
@@ -235,7 +242,6 @@ function sendReport(type) {
     }, 30000);
 }
 </script>
-
 
 </body>
 </html>
