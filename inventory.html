@@ -158,35 +158,25 @@
 
 <div class="success" id="successBox"></div>
 
-<script>
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyDQBMN_t-wAFubPPL9iI31g_sZbIWTP1oE",
-  authDomain: "hmgsa-d4a90.firebaseapp.com",
-  projectId: "hmgsa-d4a90",
-  storageBucket: "hmgsa-d4a90.firebasestorage.app",
-  messagingSenderId: "859153120328",
-  appId: "1:859153120328:web:a06ca08f8e6e39bf48ac7d",
-  measurementId: "G-YPGYMJGBKT"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
 let products = [];
 let selectedItem = "";
 let dataLoaded = false;
 
-// Load products from Firestore
-db.collection("products").get().then(snapshot => {
-    products = snapshot.docs.map(doc => doc.data());
-    dataLoaded = true;
+// رابط ملف JSON في GitHub
+const jsonURL = "https://raw.githubusercontent.com/USERNAME/REPO/main/products.json";
 
-    document.getElementById("search").disabled = false;
-    document.getElementById("search").placeholder = "ابحث برقم الصنف أو اسم المنتج";
-});
+fetch(jsonURL)
+    .then(res => res.json())
+    .then(data => {
+        products = data;
+        dataLoaded = true;
+        document.getElementById("search").disabled = false;
+        document.getElementById("search").placeholder = "ابحث برقم الصنف أو اسم المنتج";
+    })
+    .catch(() => {
+        alert("تعذر تحميل البيانات من ملف JSON");
+    });
 
-// Search function
 function searchProduct() {
     if (!dataLoaded) return;
 
@@ -224,13 +214,6 @@ function openPopup(code, name) {
 function sendReport(type) {
     document.getElementById("popup").style.display = "none";
 
-    db.collection("reports").add({
-        item_code: selectedItem.code,
-        name: selectedItem.name,
-        type: type,
-        timestamp: new Date().toISOString()
-    });
-
     let msg = `تم إرسال إشعار بالخطأ: "${type}" للمنتج "${selectedItem.name}"`;
 
     let box = document.getElementById("successBox");
@@ -241,7 +224,7 @@ function sendReport(type) {
         box.style.display = "none";
     }, 30000);
 }
-</script>
+
 
 </body>
 </html>
