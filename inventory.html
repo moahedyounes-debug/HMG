@@ -162,19 +162,23 @@ let dataLoaded = false;
 // رابط ملف JSON في GitHub
 const jsonURL = "https://raw.githubusercontent.com/moahedyounes-debug/HMG/main/products.json";
 
-
-fetch(jsonURL)
+// تحميل البيانات فورًا
+fetch(jsonURL, { cache: "no-store" })
     .then(res => res.json())
     .then(data => {
         products = data;
         dataLoaded = true;
-        document.getElementById("search").disabled = false;
-        document.getElementById("search").placeholder = "ابحث برقم الصنف أو اسم المنتج";
+
+        // تفعيل البحث مباشرة
+        const searchInput = document.getElementById("search");
+        searchInput.disabled = false;
+        searchInput.placeholder = "ابحث برقم الصنف أو اسم المنتج";
     })
     .catch(() => {
         alert("تعذر تحميل البيانات من ملف JSON");
     });
 
+// البحث
 function searchProduct() {
     if (!dataLoaded) return;
 
@@ -204,15 +208,17 @@ function searchProduct() {
     }
 }
 
+// فتح نافذة التقرير
 function openPopup(code, name) {
     selectedItem = { code, name };
     document.getElementById("popup").style.display = "flex";
 }
 
+// إرسال التقرير (بدون Firebase)
 function sendReport(type) {
     document.getElementById("popup").style.display = "none";
 
-    let msg = `تم إرسال إشعار بالخطأ: "${type}" للمنتج "${selectedItem.name}"`;
+    let msg = `تم تسجيل تقرير: "${type}" للمنتج "${selectedItem.name}"`;
 
     let box = document.getElementById("successBox");
     box.innerHTML = msg;
@@ -220,7 +226,7 @@ function sendReport(type) {
 
     setTimeout(() => {
         box.style.display = "none";
-    }, 30000);
+    }, 4000);
 }
 </script>
 
