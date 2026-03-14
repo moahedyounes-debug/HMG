@@ -157,11 +157,17 @@
 <script>
 let products = [];
 let selectedItem = "";
+let dataLoaded = false;
+
+// إظهار رسالة تحميل
+document.getElementById("search").disabled = true;
+document.getElementById("search").placeholder = "جاري تحميل البيانات...";
 
 fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRFLVRgFOuY-waesrytMd_KEZ1wwkS6qcT4Ep-n5VERE8qdRCz1V_hFwZ_amkqJPU6rG-i-t2ViHcpq/pub?output=csv")
     .then(res => res.text())
     .then(csv => {
         let lines = csv.split("\n");
+
         products = lines.slice(1).map(line => {
             let cols = line.split(",");
             return {
@@ -169,9 +175,21 @@ fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vRFLVRgFOuY-waesrytMd_KEZ
                 name: cols[1]?.trim()
             };
         });
+
+        dataLoaded = true;
+        document.getElementById("search").disabled = false;
+        document.getElementById("search").placeholder = "ابحث برقم الصنف أو اسم المنتج";
+    })
+    .catch(() => {
+        alert("تعذر تحميل البيانات من Google Sheet");
     });
 
 function searchProduct() {
+    if (!dataLoaded) {
+        alert("الرجاء الانتظار حتى يتم تحميل البيانات");
+        return;
+    }
+
     let q = document.getElementById("search").value.trim();
     let result = products.filter(p =>
         p.item_code.includes(q) ||
@@ -217,6 +235,7 @@ function sendReport(type) {
     }, 30000);
 }
 </script>
+
 
 </body>
 </html>
